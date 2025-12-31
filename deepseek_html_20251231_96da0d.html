@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>桌游收藏馆 | 按人数分类</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部区域 -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🎲</span>
+                <h1>桌游收藏馆</h1>
+            </div>
+            <p class="subtitle">按游玩人数分类，快速找到适合的游戏</p>
+            <div class="stats">
+                <div class="stat-item">
+                    <i class="fas fa-gamepad"></i>
+                    <span id="total-games">0</span> 款游戏
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-users"></i>
+                    <span id="total-players">5</span> 种人数分类
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-clock"></i>
+                    <span id="total-time">0-1200</span> 分钟时长范围
+                </div>
+            </div>
+        </header>
+
+        <!-- 控制面板 -->
+        <div class="control-panel">
+            <!-- 分类标签 -->
+            <div class="category-tabs">
+                <button class="tab active" data-category="solo">
+                    <i class="fas fa-user"></i>
+                    <span>单人游戏</span>
+                    <span class="count" id="count-solo">0</span>
+                </button>
+                <button class="tab" data-category="duo">
+                    <i class="fas fa-user-friends"></i>
+                    <span>双人游戏</span>
+                    <span class="count" id="count-duo">0</span>
+                </button>
+                <button class="tab" data-category="four">
+                    <i class="fas fa-users"></i>
+                    <span>4人游戏</span>
+                    <span class="count" id="count-four">0</span>
+                </button>
+                <button class="tab" data-category="five-six">
+                    <i class="fas fa-user-group"></i>
+                    <span>5-6人游戏</span>
+                    <span class="count" id="count-five-six">0</span>
+                </button>
+                <button class="tab" data-category="six-plus">
+                    <i class="fas fa-crowd"></i>
+                    <span>6人以上</span>
+                    <span class="count" id="count-six-plus">0</span>
+                </button>
+            </div>
+
+            <!-- 筛选器 -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="timeFilter"><i class="fas fa-hourglass-half"></i> 时长筛选：</label>
+                    <select id="timeFilter" class="filter-select">
+                        <option value="all">所有时长</option>
+                        <option value="short">短时长 (<30分钟)</option>
+                        <option value="medium">中等时长 (30-60分钟)</option>
+                        <option value="long">长时间 (>60分钟)</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="sortBy"><i class="fas fa-sort"></i> 排序方式：</label>
+                    <select id="sortBy" class="filter-select">
+                        <option value="time-asc">时长 (短→长)</option>
+                        <option value="time-desc">时长 (长→短)</option>
+                        <option value="name-asc">名称 (A→Z)</option>
+                        <option value="name-desc">名称 (Z→A)</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="搜索游戏名称...">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 游戏展示区域 -->
+        <main class="main-content">
+            <div class="category-info" id="categoryInfo">
+                <h2 id="currentCategory">单人游戏</h2>
+                <p id="categoryDescription">适合一个人静静享受的桌游体验</p>
+            </div>
+            
+            <div class="game-grid" id="gameGrid">
+                <!-- 游戏卡片将通过JS动态生成 -->
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>正在加载游戏数据...</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <p>🎯 数据来源：BoardGameGeek 收藏数据 | 最后更新：<span id="currentDate"></span></p>
+            <p class="footer-note">点击游戏卡片可查看详细时长信息 | 按人数分类便于快速选择适合的游戏</p>
+        </footer>
+    </div>
+
+    <!-- 游戏详情弹窗 -->
+    <div class="modal" id="gameModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">&times;</button>
+            <div class="modal-header">
+                <h2 id="modalTitle"></h2>
+                <div class="modal-tags" id="modalTags"></div>
+            </div>
+            <div class="modal-body">
+                <div class="modal-info">
+                    <div class="info-item">
+                        <i class="fas fa-user-group"></i>
+                        <div>
+                            <h4>游玩人数</h4>
+                            <p id="modalPlayers"></p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <h4>游戏时长</h4>
+                            <p id="modalTime"></p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-layer-group"></i>
+                        <div>
+                            <h4>游戏分类</h4>
+                            <p id="modalCategory"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="time-details">
+                    <h4><i class="fas fa-hourglass"></i> 时长详情</h4>
+                    <p id="modalTimeDetails"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
